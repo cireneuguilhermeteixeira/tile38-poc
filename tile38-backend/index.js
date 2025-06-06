@@ -1,0 +1,121 @@
+const express = require('express');
+const Tile38 = require('tile38');
+
+const app = express();
+const port = 3000;
+
+// Connect with Tile38 (default localhost:9851)
+const client = new Tile38();
+
+// Allow to receive json in request body.
+app.use(express.json());
+
+/**
+ * Send the position (ex: cellphone, robot)
+ * Payload example:
+ * {
+ *   "id": "robot1",
+ *   "lat": -3.71722,
+ *   "lon": -38.5433
+ * }
+ */
+app.put('/location', async (req, res) => {
+  const { lat, lon } = req.body;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: 'id, lat and lon are required' });
+  }
+
+  try {
+    const response = await client.set('users', 'robot1', [lat, lon]);
+    res.json({ success: true, response });
+  } catch (err) {
+    console.error('Error when trying to save position:', err);
+    res.status(500).json({ error: 'Internal server error', err });
+  }
+});
+
+
+
+app.get('/location', async (req, res) => {  
+    try {
+      const response = await client.get('users', 'robot1');
+      res.json(response);
+    } catch (err) {
+      console.error('Error when trying to get positions:', err);
+      res.status(500).json({ error: 'Internal server error', err });
+    }
+});
+
+
+app.get('/rooms', async (req, res) => {  
+    try {
+        const response = await client.get('users', 'robot1');
+        res.json(response);
+    } catch (err) {
+      console.error('Error when trying to get rooms:', err);
+      res.status(500).json({ error: 'Internal server error', err });
+    }
+});
+  
+
+
+
+app.get('/nearby', async (req, res) => {
+    const { lat, lon, radius = 60000 } = req.query;
+  
+    if (!lat || !lon) {
+      return res.status(400).json({ error: 'lat e lon are required' });
+    }
+  
+    try {
+        const result = await client.nearbyQuery('users').distance().point(parseFloat(lat), parseFloat(lon), parseFloat(radius)).execute();
+        res.json(result);
+    } catch (err) {
+      console.error('Error searching for nearby objects', err);
+      res.status(500).json({ error: 'Internal Error' });
+    }
+});
+
+
+app.post('/webhook', (req, res) => {
+    console.log('Event received from Tile38:', JSON.stringify(req.body, null, 2));
+    res.sendStatus(200);
+});
+
+const initializeHook = async () => {
+
+    const geojson = {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-38.5430, -3.7170],
+            [-38.5425, -3.7170],
+            [-38.5425, -3.7165],
+            [-38.5430, -3.7165],
+            [-38.5430, -3.7170]
+          ]
+        ]
+      };
+    
+    const setHookCmd = `SETHOOK room-hook http://localhost:3000/webhook FENCE DETECT enter,exit WITHIN users GET rooms room_office`;
+  
+
+    try {
+        const response1 = await client.set('rooms', 'room_office', geojson);
+        
+
+        console.log(response1);
+        // console.log(response2);
+        console.log('[Tile38] Hook successfully configured.');
+    } catch (err) {
+        console.error('[Tile38] Error when try to onfigure hook:', err);
+    }
+    
+}
+
+
+app.listen(port, () => {
+  //initializeHook();
+  console.log(`Server running in http://localhost:${port}`);
+});
