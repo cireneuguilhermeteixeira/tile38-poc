@@ -97,16 +97,19 @@ const initializeHook = async () => {
           ]
         ]
       };
-    
-    const setHookCmd = `SETHOOK room-hook http://localhost:3000/webhook FENCE DETECT enter,exit WITHIN users GET rooms room_office`;
-  
+      
 
     try {
-        const response1 = await client.set('rooms', 'room_office', geojson);
-        
 
+        const meta = { room: 'office' };
+        const response1 = await client.set('rooms', 'room_office', geojson);
+        let opts = {
+            get: ['rooms', 'room_office'],
+            detect: 'enter, exit',
+        };
+        const response2 =  await client.setHook('room-hook', 'http://localhost:3000/webhook', meta, 'within', 'users', opts)
         console.log(response1);
-        // console.log(response2);
+        console.log(response2);
         console.log('[Tile38] Hook successfully configured.');
     } catch (err) {
         console.error('[Tile38] Error when try to onfigure hook:', err);
@@ -116,6 +119,6 @@ const initializeHook = async () => {
 
 
 app.listen(port, () => {
-  //initializeHook();
+  initializeHook();
   console.log(`Server running in http://localhost:${port}`);
 });
