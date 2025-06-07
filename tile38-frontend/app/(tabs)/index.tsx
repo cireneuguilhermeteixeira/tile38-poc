@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import * as Location from 'expo-location';
 import io from 'socket.io-client';
-import FloorMap from './floor_map';
+import FloorMap from '@/components/FloorMap';
 
 const BACKEND_URL = 'http://localhost:3000';
 const WS_URL = BACKEND_URL.replace(/^http/, 'ws');
@@ -10,7 +10,7 @@ const WS_URL = BACKEND_URL.replace(/^http/, 'ws');
 export default function App() {
   const [location, setLocation] = useState(null);
   const [events, setEvents] = useState([]);
-  const [geoPolygon, setGeoPolygon] = useState([[]]);
+  const [areas, setAreas] = useState([]);
 
 
   const getRooms = async () => {
@@ -21,7 +21,7 @@ export default function App() {
       });
       const geolocation = await resp.json();
       console.log("geolocation", geolocation.object.coordinates[0]);
-      setGeoPolygon(geolocation.object.coordinates[0]);
+      setAreas([geolocation.object]);
 
     }catch(e) {
       console.log("Error when try to get rooms", e);
@@ -88,14 +88,17 @@ export default function App() {
 
 
   return (
+    <ScrollView>
     <View style={{ padding: 20, marginTop: 50 }}>
       <Text>📍 Current Location:</Text>
-      {location ? (
+      {location && areas.length > 0 ? (
         <>
-          <Text>{location.latitude}, {location.longitude}</Text>        
+          <Text>{location.latitude}, {location.longitude}</Text>  
+                
           <FloorMap 
-          geoPolygon={geoPolygon}
-          userPosition={[location.latitude, location.longitude]}/>
+         areas={areas}
+         userLocation={location}
+          />
         </>
       ) : (
         <Text>Loading...</Text>
@@ -107,5 +110,6 @@ export default function App() {
         <Text key={i} style={{ fontSize: 12 }}>{JSON.stringify(e)}</Text>
       ))}
     </View>
+    </ScrollView>
   );
 }
