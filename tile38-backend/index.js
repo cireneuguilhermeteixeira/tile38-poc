@@ -7,7 +7,12 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT'],
+  },
+});
 
 const port = 3000;
 
@@ -61,7 +66,7 @@ app.get('/location', async (req, res) => {
 
 app.get('/rooms', async (req, res) => {  
     try {
-        const response = await client.get('users', 'robot1');
+        const response = await client.get('rooms', 'room_office');
         res.json(response);
     } catch (err) {
       console.error('Error when trying to get rooms:', err);
@@ -134,13 +139,15 @@ const initializeHook = async () => {
 // Websocket client 
 
 io.on('connection', (socket) => {
-  console.log('WebSocket client connected!');
+  console.log('[WebSocket] Client connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('[WebSocket] Client disconnected:', socket.id);
+  });
 });
 
 
 
-
-app.listen(port, () => {
+server.listen(port, () => {
   initializeHook();
   console.log(`Server running in http://localhost:${port}`);
 });
