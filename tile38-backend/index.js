@@ -1,7 +1,12 @@
 const express = require('express');
 const Tile38 = require('tile38');
+const http = require('http');
+const socketIo = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
 const port = 3000;
 
 // Connect with Tile38 (default localhost:9851)
@@ -80,6 +85,7 @@ app.get('/nearby', async (req, res) => {
 
 app.post('/webhook', (req, res) => {
     console.log('Event received from Tile38:', JSON.stringify(req.body, null, 2));
+    io.emit('tile38-event', req.body);
     res.sendStatus(200);
 });
 
@@ -116,6 +122,16 @@ const initializeHook = async () => {
     }
     
 }
+
+
+
+// Websocket client 
+
+io.on('connection', (socket) => {
+  console.log('WebSocket client connected!');
+});
+
+
 
 
 app.listen(port, () => {
