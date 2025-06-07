@@ -2,6 +2,8 @@ const express = require('express');
 const Tile38 = require('tile38');
 const http = require('http');
 const socketIo = require('socket.io');
+const cors = require('cors');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +16,10 @@ const client = new Tile38();
 
 // Allow to receive json in request body.
 app.use(express.json());
+
+// Allow all origin
+app.use(cors({ origin: '*' }));
+
 
 /**
  * Send the position (ex: cellphone, robot)
