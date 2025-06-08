@@ -22,7 +22,7 @@ const normalizeCoordinates = (coords, width, height, padding = 10) => {
   });
 };
 
-export default function FloorMap({ areas = [], userLocation = null }) {
+export default function FloorMap({ areas = [], userLocation = null, isOnArea = false }) {
   const { width } = Dimensions.get('window');
   const height = width; // mapa quadrado
 
@@ -58,14 +58,14 @@ export default function FloorMap({ areas = [], userLocation = null }) {
                   <Polygon
                     points={points}
                     fill="rgba(0, 128, 255, 0.2)"
-                    stroke="blue"
+                    stroke={isOnArea ? "green" : "red"}
                     strokeWidth="2"
                   />
                   {area.name && coords[0] && (
                     <SvgText
                       x={coords[0][0] + 4}
                       y={coords[0][1] - 4}
-                      fill="black"
+                      fill={isOnArea ? "green" : "red"}
                       fontSize="12"
                     >
                       {area.name}

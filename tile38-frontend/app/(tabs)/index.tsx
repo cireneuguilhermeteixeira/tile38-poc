@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Platform } from 'react-native';
 import * as Location from 'expo-location';
 import io from 'socket.io-client';
 import FloorMap from '@/components/FloorMap';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'http://192.168.0.13:3000';
 const WS_URL = BACKEND_URL.replace(/^http/, 'ws');
 
 export default function App() {
   const [location, setLocation] = useState(null);
   const [events, setEvents] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [isOnArea, setIsOnArea] = useState(null);
 
 
   const getRooms = async () => {
@@ -48,6 +49,7 @@ export default function App() {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              id: Platform.OS,
               lat: coords.latitude,
               lon: coords.longitude,
             }),
@@ -72,6 +74,10 @@ export default function App() {
     socket.on('tile38-event', (data) => {
       console.log('Event received:', data);
       setEvents((prev) => [...prev, data]);
+      console.log("data.detect", data.detect)
+      
+      setIsOnArea(data.detect === 'enter')
+      
     });
 
     socket.on('disconnect', () => {
@@ -82,7 +88,11 @@ export default function App() {
   }, []);
 
 
-  
+
+  const userStatus = {
+    true: "User is in the Area",
+    false: "User is outside the Area"
+  }
 
 
 
@@ -90,12 +100,38 @@ export default function App() {
   return (
     <ScrollView>
     <View style={{ padding: 20, marginTop: 50 }}>
-      <Text>📍 Current Location:</Text>
+
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginVertical: 20,
+          color: isOnArea ? 'green' : 'red', // ou qualquer cor indicativa de status
+      }}
+      >
+        Status: {userStatus[String(isOnArea)] || "Unknown status"}
+      </Text>
+
+      <Text
+       style={{
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 20,
+    }}
+      > 📍 Current Location:: </Text>
       {location && areas.length > 0 ? (
         <>
-          <Text>{location.latitude}, {location.longitude}</Text>  
-                
+          <Text 
+          style={{
+            fontStyle: 'italic',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginVertical: 20,
+        }}
+          >{location.latitude}, {location.longitude}</Text>  
           <FloorMap 
+          isOnArea={isOnArea}
          areas={areas}
          userLocation={location}
           />
@@ -105,7 +141,14 @@ export default function App() {
       )}
      
 
-      <Text style={{ marginTop: 20 }}>🛰️ Events receiveds from Tile38:</Text>
+      <Text 
+       style={{
+        marginTop: 20,
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 20,
+    }}>🛰️ Events receiveds from Tile38:</Text>
       {events.map((e, i) => (
         <Text key={i} style={{ fontSize: 12 }}>{JSON.stringify(e)}</Text>
       ))}
