@@ -36,14 +36,15 @@ app.use(cors({ origin: '*' }));
  * }
  */
 app.put('/location', async (req, res) => {
-  const { lat, lon } = req.body;
+  const { id, lat, lon } = req.body;
 
-  if (!lat || !lon) {
+  if (!id || !lat || !lon) {
     return res.status(400).json({ error: 'id, lat and lon are required' });
   }
 
   try {
-    const response = await client.set('users', 'robot1', [lat, lon]);
+    console.log("[put location]:", req.body);
+    const response = await client.set('users', id, [lat, lon]);
     res.json({ success: true, response });
   } catch (err) {
     console.error('Error when trying to save position:', err);
@@ -106,11 +107,11 @@ const initializeHook = async () => {
         type: "Polygon",
         coordinates: [
           [
-            [-38.56035535, -3.74399405],
-            [-38.56031925, -3.74399405],
-            [-38.56031925, -3.74395815],
-            [-38.56035535, -3.74395815],
-            [-38.56035535, -3.74399405]
+            [-38.560253151, -3.743789153],
+            [-38.560366558, -3.743880912],
+            [-38.560349369, -3.743901897],
+            [-38.560235962, -3.743810138],
+            [-38.560253151, -3.743789153]
           ]
         ]
       };
@@ -124,7 +125,7 @@ const initializeHook = async () => {
             get: ['rooms', 'room_office'],
             detect: 'enter, exit',
         };
-        const response2 =  await client.setHook('room-hook', 'http://localhost:3000/webhook', meta, 'within', 'users', opts)
+        const response2 =  await client.setHook('room-hook', 'http://192.168.0.13:3000/webhook', meta, 'within', 'users', opts)
         console.log(response1);
         console.log(response2);
         console.log('[Tile38] Hook successfully configured.');
