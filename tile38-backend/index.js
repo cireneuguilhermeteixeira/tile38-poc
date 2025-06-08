@@ -119,8 +119,9 @@ const initializeHook = async () => {
 
     try {
 
-        const meta = { room: 'office' };
         const response1 = await client.set('rooms', 'room_office', geojson);
+        const meta = { room: 'office' };
+
         let opts = {
             get: ['rooms', 'room_office'],
             detect: 'enter, exit',
