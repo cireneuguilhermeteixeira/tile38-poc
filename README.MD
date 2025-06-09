@@ -110,7 +110,13 @@ The mobile application was developed using Expo with support for Android, iOS an
 # 🧪 Demonstration
 The video below shows the application working in real time: as I walk through the rooms of my house, the cell phone's location is updated and the system automatically detects when I leave or enter the defined geographic area.
 
+
 # 📹 DEMO
+
+
+[![Watch Video](https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg)](https://youtu.be/OLAf82mst1E?si=I0g7l1ntctRhFSFt)
+
+
 
 # 🛠️ Technologies Used
 - Tile38 – In-memory geospatial database
